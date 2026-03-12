@@ -1,0 +1,812 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Security Intelligence Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: loginAttempts
+    description: Login attempt tracking
+  - name: emotions
+    description: Speech emotion recognition
+  - name: anomalies
+    description: Anomaly detection
+  - name: blockchain
+    description: Blockchain audit logs
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /login-attempts:
+    get:
+      operationId: getLoginAttempts
+      tags: [loginAttempts]
+      summary: Get all login attempts
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [success, failure, all]
+            default: all
+      responses:
+        "200":
+          description: List of login attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginAttemptsResponse"
+
+    post:
+      operationId: createLoginAttempt
+      tags: [loginAttempts]
+      summary: Record a login attempt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLoginAttemptRequest"
+      responses:
+        "201":
+          description: Login attempt recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginAttempt"
+
+  /login-attempts/stats:
+    get:
+      operationId: getLoginStats
+      tags: [loginAttempts]
+      summary: Get login attempt statistics
+      responses:
+        "200":
+          description: Login statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginStatsResponse"
+
+  /emotions/analyze:
+    post:
+      operationId: analyzeEmotion
+      tags: [emotions]
+      summary: Analyze emotion from audio data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmotionAnalysisRequest"
+      responses:
+        "200":
+          description: Emotion analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmotionAnalysisResponse"
+
+  /emotions/calls:
+    get:
+      operationId: getEmotionCalls
+      tags: [emotions]
+      summary: Get all emotion analysis sessions
+      responses:
+        "200":
+          description: List of call sessions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmotionCallsResponse"
+
+  /emotions/calls/{callId}:
+    get:
+      operationId: getEmotionCall
+      tags: [emotions]
+      summary: Get a single call session with timeline
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Call session with emotion timeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmotionCallDetail"
+
+  /anomalies:
+    get:
+      operationId: getAnomalies
+      tags: [anomalies]
+      summary: Get detected anomalies
+      responses:
+        "200":
+          description: List of detected anomalies
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnomaliesResponse"
+
+  /anomalies/analyze:
+    post:
+      operationId: analyzeAnomaly
+      tags: [anomalies]
+      summary: Analyze login attempt for anomalies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnomalyAnalysisRequest"
+      responses:
+        "200":
+          description: Anomaly analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnomalyAnalysisResponse"
+
+  /blockchain/logs:
+    get:
+      operationId: getBlockchainLogs
+      tags: [blockchain]
+      summary: Get all blockchain audit logs
+      responses:
+        "200":
+          description: Blockchain log chain
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockchainLogsResponse"
+
+  /blockchain/verify:
+    get:
+      operationId: verifyBlockchain
+      tags: [blockchain]
+      summary: Verify blockchain integrity
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockchainVerifyResponse"
+
+  /blockchain/add:
+    post:
+      operationId: addBlockchainLog
+      tags: [blockchain]
+      summary: Add a log entry to the blockchain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddBlockchainLogRequest"
+      responses:
+        "201":
+          description: Block added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockchainBlock"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, operator, viewer]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - email
+        - role
+        - createdAt
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    LoginAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        ipAddress:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        userAgent:
+          type: string
+        deviceType:
+          type: string
+          enum: [mobile, desktop, tablet, unknown]
+        status:
+          type: string
+          enum: [success, failure]
+        failureReason:
+          type: string
+          nullable: true
+        riskScore:
+          type: number
+        isAnomaly:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - ipAddress
+        - country
+        - city
+        - userAgent
+        - deviceType
+        - status
+        - riskScore
+        - isAnomaly
+        - timestamp
+
+    CreateLoginAttemptRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        ipAddress:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        userAgent:
+          type: string
+        deviceType:
+          type: string
+          enum: [mobile, desktop, tablet, unknown]
+        status:
+          type: string
+          enum: [success, failure]
+        failureReason:
+          type: string
+          nullable: true
+      required:
+        - username
+        - ipAddress
+        - status
+
+    LoginAttemptsResponse:
+      type: object
+      properties:
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoginAttempt"
+        total:
+          type: integer
+      required:
+        - attempts
+        - total
+
+    LoginStatsResponse:
+      type: object
+      properties:
+        totalAttempts:
+          type: integer
+        successCount:
+          type: integer
+        failureCount:
+          type: integer
+        anomalyCount:
+          type: integer
+        topCountries:
+          type: array
+          items:
+            type: object
+            properties:
+              country:
+                type: string
+              count:
+                type: integer
+            required:
+              - country
+              - count
+        hourlyBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+              success:
+                type: integer
+              failure:
+                type: integer
+            required:
+              - hour
+              - success
+              - failure
+        dailyBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              success:
+                type: integer
+              failure:
+                type: integer
+            required:
+              - date
+              - success
+              - failure
+      required:
+        - totalAttempts
+        - successCount
+        - failureCount
+        - anomalyCount
+        - topCountries
+        - hourlyBreakdown
+        - dailyBreakdown
+
+    EmotionResult:
+      type: object
+      properties:
+        emotion:
+          type: string
+          enum: [stressed, drunk, abusive, pain, neutral]
+        confidence:
+          type: number
+        timestamp:
+          type: number
+          description: Seconds from start of audio
+      required:
+        - emotion
+        - confidence
+        - timestamp
+
+    EmotionAnalysisRequest:
+      type: object
+      properties:
+        callId:
+          type: string
+        audioData:
+          type: string
+          description: Base64 encoded audio chunk or descriptor
+        segmentStart:
+          type: number
+        segmentDuration:
+          type: number
+      required:
+        - callId
+        - audioData
+
+    EmotionAnalysisResponse:
+      type: object
+      properties:
+        callId:
+          type: string
+        emotions:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmotionResult"
+        dominantEmotion:
+          type: string
+          enum: [stressed, drunk, abusive, pain, neutral]
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        shouldEscalate:
+          type: boolean
+        message:
+          type: string
+      required:
+        - callId
+        - emotions
+        - dominantEmotion
+        - riskLevel
+        - shouldEscalate
+
+    EmotionCallSession:
+      type: object
+      properties:
+        callId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+        duration:
+          type: number
+          nullable: true
+        peakRiskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        wasEscalated:
+          type: boolean
+        callerInfo:
+          type: string
+      required:
+        - callId
+        - startTime
+        - peakRiskLevel
+        - wasEscalated
+
+    EmotionCallsResponse:
+      type: object
+      properties:
+        calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmotionCallSession"
+        total:
+          type: integer
+      required:
+        - calls
+        - total
+
+    EmotionCallDetail:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/EmotionCallSession"
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmotionResult"
+      required:
+        - session
+        - timeline
+
+    AnomalyAnalysisRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        ipAddress:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        userAgent:
+          type: string
+        deviceType:
+          type: string
+        loginTime:
+          type: string
+          format: date-time
+      required:
+        - username
+        - ipAddress
+
+    AnomalyFactor:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [unusual_location, unusual_time, new_device, high_frequency, brute_force, vpn_detected]
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+      required:
+        - type
+        - description
+        - severity
+
+    AnomalyAnalysisResponse:
+      type: object
+      properties:
+        isAnomaly:
+          type: boolean
+        riskScore:
+          type: number
+        factors:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnomalyFactor"
+        recommendation:
+          type: string
+          enum: [allow, monitor, challenge, block]
+        message:
+          type: string
+      required:
+        - isAnomaly
+        - riskScore
+        - factors
+        - recommendation
+
+    AnomalyRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        loginAttemptId:
+          type: integer
+          nullable: true
+        username:
+          type: string
+        anomalyType:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        description:
+          type: string
+        riskScore:
+          type: number
+        resolved:
+          type: boolean
+        detectedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - anomalyType
+        - severity
+        - description
+        - riskScore
+        - resolved
+        - detectedAt
+
+    AnomaliesResponse:
+      type: object
+      properties:
+        anomalies:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnomalyRecord"
+        total:
+          type: integer
+      required:
+        - anomalies
+        - total
+
+    BlockchainBlock:
+      type: object
+      properties:
+        index:
+          type: integer
+        hash:
+          type: string
+        previousHash:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            eventType:
+              type: string
+            userId:
+              type: string
+            details:
+              type: string
+            ipAddress:
+              type: string
+          required:
+            - eventType
+        nonce:
+          type: integer
+      required:
+        - index
+        - hash
+        - previousHash
+        - timestamp
+        - data
+        - nonce
+
+    BlockchainLogsResponse:
+      type: object
+      properties:
+        chain:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlockchainBlock"
+        length:
+          type: integer
+        isValid:
+          type: boolean
+      required:
+        - chain
+        - length
+        - isValid
+
+    BlockchainVerifyResponse:
+      type: object
+      properties:
+        isValid:
+          type: boolean
+        tamperDetected:
+          type: boolean
+        invalidBlockIndex:
+          type: integer
+          nullable: true
+        message:
+          type: string
+      required:
+        - isValid
+        - tamperDetected
+        - message
+
+    AddBlockchainLogRequest:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum: [login_success, login_failure, anomaly_detected, call_escalated, user_created, config_changed]
+        userId:
+          type: string
+        details:
+          type: string
+        ipAddress:
+          type: string
+      required:
+        - eventType
+        - userId

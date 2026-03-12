@@ -1,0 +1,19 @@
+packages:
+  "recharts": "For dashboard charts and emotion timelines"
+  "framer-motion": "For page transitions and cybersecurity-themed animations"
+  "date-fns": "For human-readable date formatting"
+  "clsx": "For merging tailwind classes"
+  "tailwind-merge": "For safely merging tailwind classes"
+  "lucide-react": "For beautiful consistent iconography"
+
+images:
+  - path: "artifacts/security-dashboard/public/images/cyber-bg.png"
+    description: "Dark glowing abstract cybersecurity grid network map with cyan and deep purple accents, subtle light leaks"
+    aspect_ratio: "16:9"
+  - path: "artifacts/security-dashboard/public/images/logo.png"
+    description: "Minimalist glowing shield eye logo icon in cyan and bright neon green on transparent background"
+    aspect_ratio: "1:1"
+
+notes:
+  - App relies on JWT tokens stored in localStorage.
+  - A global fetch interceptor is used to attach the Authorization header since custom-fetch relies on global fetch.
