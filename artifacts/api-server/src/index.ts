@@ -1,19 +1,11 @@
 import app from "./app";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
+// Default to 3001 locally; Replit sets PORT automatically
+const port = Number(process.env["PORT"] ?? 3001);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
+  if (!process.env["PORT"]) {
+    console.log(`  API: http://localhost:${port}/api/healthz`);
+  }
 });
